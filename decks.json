@@ -1,0 +1,77 @@
+[
+  {
+    "id": 0,
+    "cards": [
+      {
+        "id": "23995346",
+        "name": "Blue-Eyes Ultimate Dragon",
+        "att": 4500,
+        "def": 3800,
+        "image": "/images/cards/kaiba_deck/23995346.jpg"
+      },
+      {
+        "id": "89631139",
+        "name": "Blue-Eyes White Dragon",
+        "att": 3000,
+        "def": 2500,
+        "image": "images/cards/kaiba_deck/89631139.jpg"
+      },
+      {
+        "id": "2111707",
+        "name": "XY-Dragon Cannon",
+        "att": 2200,
+        "def": 1900,
+        "image": "/images/cards/kaiba_deck/2111707.jpg"
+      },
+      {
+        "id": "5053103",
+        "name": "Battle Ox",
+        "att": 1700,
+        "def": 1000,
+        "image": "/images/cards/kaiba_deck/5053103.jpg"
+      },
+      {
+        "id": "10000000",
+        "name": "Obelisk the Tormentor",
+        "att": 4000,
+        "def": 4000,
+        "image": "/images/cards/kaiba_deck/10000000.jpg"
+      },
+      {
+        "id": "14898066",
+        "name": "Vorse Raider",
+        "att": 1900,
+        "def": 1200,
+        "image": "/images/cards/kaiba_deck/14898066.jpg"
+      },
+      {
+        "id": "17444133.jpg",
+        "name": "Kaiser Sea Horse",
+        "att": 1700,
+        "def": 1650,
+        "image": "/images/cards/kaiba_deck/17444133.jpg"
+      },
+      {
+        "id": "17658803",
+        "name": "Luster Dragon",
+        "att": 2400,
+        "def": 1400,
+        "image": "/images/cards/kaiba_deck/17658803.jpg"
+      },
+      {
+        "id": "17985575",
+        "name": "Lord of D.",
+        "att": 1200,
+        "def": 1100,
+        "image": "/images/cards/kaiba_deck/17985575.jpg"
+      },
+      {
+        "id": "22804644.jpg",
+        "name": "Doom Virus Dragon",
+        "att": 1900,
+        "def": 1500,
+        "image": "/images/cards/kaiba_deck/22804644.jpg"
+      }
+    ]
+  }
+]
