@@ -1,623 +1,239 @@
-import { DefaultEventsMap } from "@socket.io/component-emitter";
-import type { NextPage } from "next";
-import Head from "next/head";
-import { useRouter } from "next/router";
+import { NextPage } from "next";
 import { useEffect, useState } from "react";
-import { socket } from "../services/socket";
-import styles from "./game.module.scss";
-import image from "../assets/images/kaiba.png";
+import { Field } from "../components/Field";
+import { Hand } from "../components/Hand";
+import { SideBar } from "../components/SideBar";
+import GameCore from "../@core/game";
+import useGame from "../hooks/useGame";
+import { Modal } from "../components/Modal";
 
-import Image from "next/image";
+const cards = [
+  {
+    id: "23995346",
+    name: "Blue-Eyes Ultimate Dragon",
+    att: 4500,
+    def: 3800,
+    pos: "SET",
+    image: "/images/cards/kaiba_deck/23995346.jpg",
+  },
+  {
+    id: "89631139",
+    name: "Blue-Eyes White Dragon",
+    att: 3000,
+    def: 2500,
+    pos: "FACE",
+    image: "images/cards/kaiba_deck/89631139.jpg",
+  },
+  {
+    id: "2111707",
+    name: "XY-Dragon Cannon",
+    att: 2200,
+    def: 1900,
+    pos: "DEFENSE",
+    image: "/images/cards/kaiba_deck/2111707.jpg",
+  },
+  {
+    id: "5053103",
+    name: "Battle Ox",
+    att: 1700,
+    def: 1000,
+    image: "/images/cards/kaiba_deck/5053103.jpg",
+    pos: "FACE",
+  },
+  {
+    id: "10000000",
+    name: "Obelisk the Tormentor",
+    att: 4000,
+    def: 4000,
+    image: "/images/cards/kaiba_deck/10000000.jpg",
+    pos: "FACE",
+  },
+  {
+    id: "14898066",
+    name: "Vorse Raider",
+    att: 1900,
+    def: 1200,
+    image: "/images/cards/kaiba_deck/14898066.jpg",
+    pos: "FACE",
+  },
+  {
+    id: "17444133",
+    name: "Kaiser Sea Horse",
+    att: 1700,
+    def: 1650,
+    image: "/images/cards/kaiba_deck/17444133.jpg",
+    pos: "FACE",
+  },
+  {
+    id: "17658803",
+    name: "Luster Dragon",
+    att: 2400,
+    def: 1400,
+    image: "/images/cards/kaiba_deck/17658803.jpg",
+    pos: "FACE",
+  },
+  {
+    id: "17985575",
+    name: "Lord of D.",
+    att: 1200,
+    def: 1100,
+    image: "/images/cards/kaiba_deck/17985575.jpg",
+    pos: "FACE",
+  },
+  {
+    id: "22804644",
+    name: "Doom Virus Dragon",
+    att: 1900,
+    def: 1500,
+    image: "/images/cards/kaiba_deck/22804644.jpg",
+    pos: "FACE",
+  },
+];
 
-import decks from "../../decks.json";
+const player = {
+  deck: cards,
+};
 
-const Home: NextPage = () => {
-  const router = useRouter();
+const opponent = {
+  deck: cards,
+};
 
-  const deck = Number(router.asPath.split("=")[2]);
-  const [cards, setCards] = useState(decks[0].cards.slice(0, 4));
-
-  const [summonedCards, setSummonedCards] = useState([]);
-  const [summonedCardsPlayer2, setSummonedCardsPlayer2Mock] = useState([]);
-
-  const [attackerCard, setAttackerCard] = useState();
-  const [showModal, setShowModal] = useState(false);
-
+const Game: NextPage = () => {
+  const [cardsBox, setCardsBox] = useState(new Array(14).fill(null));
+  const [monsterToBeSummoned, setMonsterToBeSummoned] = useState(null);
+  // const [playerHand, setPlayerHand] = useState([]);
+  // const [opponentHand, setOpponentHand] = useState([]);
   const [selectedCard, setSelectedCard] = useState();
-  const [player1Pv, setPlayer1Pv] = useState(4000);
-  const [player2Pv, setPlayer2Pv] = useState(4000);
-  const [players, setPlayers] = useState(0);
 
-  // Phases
-  // 1 - summon
-  // 2 - attack
-  // 3
-  const [phase, setPhase] = useState(1);
+  const {
+    opponentHand,
+    playerHand,
+    summon,
+    opponentField,
+    playerField,
+    opponenLifePoints,
+    playerLifePoints,
+  } = useGame({ player, opponent });
 
-  function summonCard(card: any) {
-    socket.emit("summon", card);
-    //setSummonedCards([...summonedCards, card]);
-    const filteredCards = cards.filter((c) => c.id != card.id);
-    setCards(filteredCards);
-    setShowModal(false);
+  console.log("playerField", playerField);
+  console.log("playerHand", playerHand);
+
+  function confirmSummon() {
+    if (!monsterToBeSummoned) return;
+    console.log(monsterToBeSummoned);
+
+    summon(monsterToBeSummoned);
+
+    setMonsterToBeSummoned(null);
   }
 
   function handleSummon(card) {
-    setShowModal(true);
+    setMonsterToBeSummoned(card);
+  }
+
+  function handleSelectCard(card) {
+    //console.log(card);
     setSelectedCard(card);
-    setPhase(1);
   }
-
-  function handleClickOnP2Card(card) {
-    setShowModal(true);
-    setSelectedCard(card);
-
-    if (phase !== 3) {
-      setPhase(0);
-    }
-  }
-
-  function handleModalConfirm(card) {
-    if (phase === 1) {
-      summonCard(card);
-    } else if (phase === 2) {
-      setAttackerCard(card);
-      setPhase(3);
-      setShowModal(false);
-    } else {
-      attack(card);
-      setShowModal(false);
-    }
-  }
-
-  function handleAttack(card) {
-    setShowModal(true);
-    setSelectedCard(card);
-    setPhase(2);
-  }
-
-  function destroyCard(card) {
-    socket.emit("destroy", card);
-  }
-
-  function attack(targetCard) {
-    console.log("attackerCard", attackerCard);
-    console.log("targetCard", targetCard);
-    const result = attackerCard.att - targetCard.att;
-
-    alert(result);
-
-    if (result > 0) {
-      destroyCard(targetCard);
-      setPlayer2Pv(player2Pv - result);
-    } else if (result < 0) {
-      destroyCard(attackerCard);
-      setPlayer2Pv(player1Pv - result * -1);
-    }
-  }
-
-  useEffect(() => {
-    const socketInitializer = async () => {
-      //const nickname = prompt("Digite seu nickname: ");
-
-      console.log(router.asPath.split("=")[2]);
-
-      await fetch("/api/socket");
-
-      socket.emit("teste");
-
-      socket.on("teste", (data) => {
-        console.log("players:", data);
-        setPlayers(data);
-      });
-
-      socket.on("summon", (obj) => {
-        if (obj.id === socket.id) {
-          setSummonedCards([...summonedCards, obj.card]);
-        } else {
-          setSummonedCardsPlayer2Mock([...summonedCardsPlayer2, obj.card]);
-        }
-      });
-
-      socket.on("destroy", (obj) => {
-        console.log("obj,", obj);
-
-        if (obj.id === socket.id) {
-          const summonedCard = summonedCards.find(
-            (card) => card.id === obj.card.id
-          );
-
-          if (summonedCard) {
-            setSummonedCards(
-              summonedCards.filter((card) => card.id !== summonedCard.id)
-            );
-          } else {
-            setSummonedCardsPlayer2Mock(
-              summonedCardsPlayer2.filter((card) => card.id !== obj.card.id)
-            );
-          }
-        } else {
-          const summonedCardPlayer2 = summonedCardsPlayer2.find(
-            (card) => card.id === obj.card.id
-          );
-
-          if (summonedCardPlayer2) {
-            setSummonedCardsPlayer2Mock(
-              summonedCardsPlayer2.filter(
-                (card) => card.id !== summonedCardPlayer2.id
-              )
-            );
-          } else {
-            setSummonedCards(
-              summonedCards.filter((card) => card.id !== obj.card.id)
-            );
-          }
-        }
-
-        // if (obj.id) {
-        //   console.log("summonedCards", summonedCards);
-        //   const filteredCards = summonedCards.filter(
-        //     (card) => card.id !== obj.card.id
-        //   );
-        //   console.log("filteredCards", filteredCards);
-        //   setSummonedCards(filteredCards);
-        // } else {
-        //   const filteredCards = summonedCardsPlayer2.filter(
-        //     (card) => card.id !== obj.card.id
-        //   );
-        //   setSummonedCardsPlayer2Mock(filteredCards);
-        // }
-      });
-    };
-
-    socketInitializer();
-
-    // return () => {
-    //   socket?.off("connect", () => {
-    //     socket.emit("test", "Hello World!");
-    //   });
-
-    //   socket?.off("summon", (obj) => {
-    //     if (obj.id === socket.id) {
-    //       setSummonedCards([...summonedCards, obj.card]);
-    //     } else {
-    //       setSummonedCardsPlayer2Mock([...summonedCardsPlayer2, obj.card]);
-    //     }
-    //   });
-
-    //   socket?.off("destroy", (obj) => {
-    //     if (obj.id === socket.id) {
-    //       console.log("summonedCards", summonedCards);
-    //       const filteredCards = summonedCards.filter(
-    //         (card) => card.id !== obj.card.id
-    //       );
-    //       console.log("filteredCards", filteredCards);
-    //       setSummonedCards(filteredCards);
-    //     } else {
-    //       const filteredCards = summonedCardsPlayer2.filter(
-    //         (card) => card.id !== obj.card.id
-    //       );
-    //       setSummonedCardsPlayer2Mock(filteredCards);
-    //     }
-    //   });
-    // };
-  }, [router.asPath, summonedCards, summonedCardsPlayer2, setPlayers]);
 
   return (
-    <>
-      <Head>
-        <title>Game Card</title>
-        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-      </Head>
-      {showModal && (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        width: "100%",
+        background: "rgb(235, 232, 232)",
+      }}
+    >
+      <Modal isOpen={monsterToBeSummoned ?? false}>
         <div
           style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            left: 0,
-            bottom: 0,
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
             justifyContent: "center",
-            background: "rgba(0, 0 ,0 ,0.7)",
-            zIndex: 10,
+            width: 200,
+            //height: 200,
+            background: "#fff",
+            border: "1px solid rgba(0, 0, 0, 0.2)",
+            borderRadius: 10,
+            padding: 16,
+            gap: 16,
           }}
         >
-          <div
+          <button
             style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 12,
-              color: "#fff",
-              border: "1px solid #0fe2ee",
+              background: "#fff",
+              border: "1px solid rgba(0, 0, 0, 0.2)",
+              borderRadius: 4,
               padding: 10,
-              borderRadius: 10,
+              cursor: "pointer",
             }}
+            onClick={confirmSummon}
           >
-            <div
-              style={{
-                border: "1px solid white",
-                height: 300,
-                width: 200,
-                cursor: "pointer",
-                background: `center / cover url(${selectedCard.image})`,
-                borderRadius: 5,
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                fontSize: 12,
-                color: "#fff",
-                marginTop: 10,
-                width: "100%",
-              }}
-            >
-              <span
-                style={{
-                  marginBottom: 10,
-                }}
-              >
-                {selectedCard.name}
-              </span>
-              <span>Attack: {selectedCard.att}</span>
-              <span>Defense: {selectedCard.def}</span>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginTop: 10,
-                }}
-              >
-                <button
-                  style={{
-                    background: "none",
-                    border: "1px solid red",
-                    color: "#fff",
-                    borderRadius: 4,
-                    cursor: "pointer",
-                  }}
-                  onClick={() => setShowModal(false)}
-                >
-                  Close
-                </button>
-                {phase !== 0 && (
-                  <button
-                    style={{
-                      background: "none",
-                      border: "1px solid #0fe2ee",
-                      color: "#fff",
-                      borderRadius: 4,
-                      cursor: "pointer",
-                    }}
-                    onClick={() => handleModalConfirm(selectedCard)}
-                  >
-                    {phase === 1
-                      ? "Summon"
-                      : phase === 2
-                      ? "Atack"
-                      : phase === 3
-                      ? "Attack this card"
-                      : ""}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      <div className={styles.container}>
-        {players < 2 ? (
-          <div
+            Summon
+          </button>
+          <button
             style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              left: 0,
-              bottom: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "rgba(0, 0 ,0 ,0.7)",
-              zIndex: 10,
-              color: "#fff",
+              background: "#fff",
+              border: "1px solid rgba(0, 0, 0, 0.2)",
+              borderRadius: 4,
+              padding: 10,
+              cursor: "pointer",
             }}
           >
-            Aguardando outro jogador...
-          </div>
-        ) : (
-          <>
-            <div
-              style={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
-                //border: "2px solid blue",
-              }}
-            >
-              <div
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {Array.from([1, 2, 3, 4]).map((item) => (
-                  <div
-                    className={styles.p2cards}
-                    key={item}
-                    style={{
-                      height: 80,
-                      width: 50,
-                    }}
-                  />
-                ))}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <div
-                  style={{
-                    height: 80,
-                    width: 80,
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    marginRight: 10,
-                  }}
-                >
-                  <Image
-                    src={image}
-                    layout="responsive"
-                    alt="player"
-                    objectFit="cover"
-                  />
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ color: "#fff", marginBottom: 5 }}>
-                    Jogador 2
-                  </span>
-                  <span style={{ color: "#fff" }}>LP {player2Pv}</span>
-                </div>
-              </div>
-            </div>
-            <div
-              style={{
-                height: 400,
-                width: "100%",
-                // border: "2px solid red",
-              }}
-            >
-              <div
-                style={{
-                  height: 200,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "0 20px",
-                }}
-              >
-                <div
-                  className={styles.p2cards}
-                  style={{
-                    height: 80,
-                    width: 50,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 10,
-                    color: "#fff",
-                  }}
-                >
-                  6
-                </div>
-                {summonedCardsPlayer2.map((card) => (
-                  <div
-                    key={card.id}
-                    style={{
-                      border: "1px solid white",
-                      height: 80,
-                      width: 50,
-                      cursor: "pointer",
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      flexDirection: "column",
-                      fontSize: 10,
-                      background: `center / cover url(${card.image})`,
-                    }}
-                    onClick={() => handleClickOnP2Card(card)}
-                  >
-                    <div
-                      style={{
-                        color: "#fff",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "flex-end",
-                        fontSize: 10,
-                        position: "relative",
-                        bottom: -10,
-                        //right: -10,
-                        zIndex: 1,
-                        background: "rgba(0, 0, 0, 0.5)",
-                        width: 60,
-                      }}
-                    >
-                      <span>atk: {card.att}</span>
-                      <span>{card.def}</span>
-                    </div>
-                  </div>
-                ))}
-                <div
-                  style={{
-                    //border: "1px solid blue",
-                    height: 80,
-                    width: 50,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    flexDirection: "column",
-                    fontSize: 10,
-                  }}
-                />
-              </div>
-
-              <div
-                style={{
-                  height: 200,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "0 20px",
-                }}
-              >
-                <div
-                  style={{
-                    //border: "1px solid blue",
-                    height: 80,
-                    width: 50,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    flexDirection: "column",
-                    fontSize: 10,
-                  }}
-                />
-                {summonedCards.map((card) => (
-                  <div
-                    key={card.id}
-                    style={{
-                      border: "1px solid white",
-                      height: 80,
-                      width: 50,
-                      cursor: "pointer",
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      flexDirection: "column",
-                      fontSize: 10,
-                      background: `center / cover url(${card.image})`,
-                    }}
-                    onClick={() => handleAttack(card)}
-                  >
-                    <div
-                      style={{
-                        color: "#fff",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "flex-end",
-                        fontSize: 10,
-                        position: "relative",
-                        bottom: -10,
-                        //right: -10,
-                        zIndex: 1,
-                        background: "rgba(0, 0, 0, 0.5)",
-                        width: 60,
-                      }}
-                    >
-                      <span>atk: {card.att}</span>
-                      <span>{card.def}</span>
-                    </div>
-                  </div>
-                ))}
-                <div
-                  className={styles.p2cards}
-                  style={{
-                    height: 80,
-                    width: 50,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 10,
-                    color: "#fff",
-                  }}
-                >
-                  {cards.length}
-                </div>
-              </div>
-            </div>
-            <div
-              style={{
-                // border: "2px solid blue",
-                height: 200,
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <div
-                  style={{
-                    height: 80,
-                    width: 80,
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    marginRight: 10,
-                  }}
-                >
-                  <Image
-                    src={image}
-                    layout="responsive"
-                    alt="player"
-                    objectFit="cover"
-                  />
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ color: "#fff", marginBottom: 5 }}>
-                    Jogador 1
-                  </span>
-                  <span style={{ color: "#fff" }}>LP {player1Pv}</span>
-                </div>
-              </div>
-              <div
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {cards.map((card) => (
-                  <div
-                    key={card.id}
-                    style={{
-                      border: "1px solid white",
-                      height: 80,
-                      width: 50,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      flexDirection: "column",
-                      fontSize: 10,
-                      background: `center / cover url(${card.image})`,
-                    }}
-                    onClick={() => handleSummon(card)}
-                  ></div>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
+            Set
+          </button>
+          <button
+            style={{
+              background: "#fff",
+              border: "1px solid rgba(0, 0, 0, 0.2)",
+              borderRadius: 4,
+              padding: 10,
+              cursor: "pointer",
+            }}
+            onClick={() => setMonsterToBeSummoned(null)}
+          >
+            Cancel
+          </button>
+        </div>
+      </Modal>
+      <SideBar
+        selectedCard={selectedCard || monsterToBeSummoned}
+        lifePoints={playerLifePoints}
+      />
+      <div
+        className="field"
+        style={{
+          width: "100%",
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+        }}
+      >
+        <Hand
+          side="OPPONENT"
+          cards={opponentHand}
+          onClickCard={handleSummon}
+          handleSelectCard={handleSelectCard}
+        />
+        <Field
+          cards={playerField}
+          ocards={opponentField}
+          confirmSummon={confirmSummon}
+        />
+        <Hand
+          side="MINE"
+          cards={playerHand}
+          onClickCard={handleSummon}
+          handleSelectCard={handleSelectCard}
+        />
       </div>
-    </>
+
+      <SideBar side="RIGH" lifePoints={opponenLifePoints} />
+    </div>
   );
 };
 
-export default Home;
+export default Game;
