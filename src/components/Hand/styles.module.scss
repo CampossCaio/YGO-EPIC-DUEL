@@ -1,0 +1,22 @@
+@keyframes slidein {
+  from {
+    margin-left: 100%;
+  }
+
+  to {
+    margin-right: 0%;
+  }
+}
+
+.hand {
+  display: flex;
+  gap: 10px;
+  position: fixed;
+  bottom: 30px;
+  animation-duration: 0.8s;
+  animation-name: slidein;
+
+  &.opponent {
+    top: 30px;
+  }
+}
