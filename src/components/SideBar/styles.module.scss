@@ -1,0 +1,15 @@
+.sidebar {
+  width: 400px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  &.left {
+    margin: 20px 0px 20px 20px;
+  }
+
+  &.right {
+    margin: 20px 20px 20px 0px;
+  }
+}
