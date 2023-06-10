@@ -1,0 +1,33 @@
+.changeTurn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 50px;
+
+  button {
+    background: var(--colors-shape-tertiary);
+    color: var(--colors-grey-100);
+    border: 0;
+    outline: 0;
+    cursor: pointer;
+    padding: 16px;
+    font-weight: bold;
+    border-radius: 6px;
+    font-weight: bold;
+
+    &:hover {
+      background: var(--colors-grey-500);
+    }
+
+    &:disabled {
+      opacity: 0.8;
+      pointer-events: none;
+    }
+  }
+
+  &.mine {
+    button {
+      color: var(--colors-grey-100);
+    }
+  }
+}

@@ -19,4 +19,10 @@
   &.opponent {
     top: 30px;
   }
+
+  .card {
+    &:hover {
+      transform: translateY(-30px);
+    }
+  }
 }

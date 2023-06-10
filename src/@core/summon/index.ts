@@ -1,6 +1,4 @@
-const summon = () => {
-  
-};
+const summon = () => {};
 
 const tribute = () => {};
 

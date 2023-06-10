@@ -1,27 +1,38 @@
-import { useEffect, useState } from "react";
 import styles from "./styles.module.scss";
+import useGame from "../../hooks/useGame";
+import { CARD_POS, SIDE } from "../../interfaces/enum";
+
+import classNames from "classnames";
 
 export type PlayMatProps = {
-  cards: Array<any>;
-  confirmSummon: (index: number) => void;
+  fieldCards: Array<any>;
+  deckCards: Array<any>;
+  graveyardCards: Array<any>;
   side?: "MINE" | "OPPONENT";
+  battle?: (args: any) => void;
 };
 
-const especialBoxIndexs = [0, 6, 7, 13];
-const trapAndSpellIndexs = [8, 9, 10, 11, 12];
-const monsterIndexs = [1, 2, 3, 4, 5];
-
-const cardsBox = new Array(14).fill(null);
-
 export const PlayMat = ({
-  cards,
-  confirmSummon,
+  fieldCards,
+  deckCards,
+  graveyardCards,
   side = "MINE",
 }: PlayMatProps) => {
-  const [att, setAtt] = useState(null);
-  const [target, setTarget] = useState(null);
+  const {
+    setIsMonsterActionsModalOpen,
+    setSelectedCard,
+    playerId,
+    duelistTurn,
+    firstTurn,
+  } = useGame();
 
-  function buildCardsBoxFrom(cards: Array<any>) {
+  const isMyTurn = playerId === duelistTurn;
+
+  function buildCardsBoxFrom(
+    fieldCards: Array<any>,
+    deckCards: Array<any>,
+    graveyardCards: Array<any>
+  ) {
     const cardsBox = [
       { type: "ESPECIAL", card: null },
       { type: "MONSTER", card: null },
@@ -29,80 +40,111 @@ export const PlayMat = ({
       { type: "MONSTER", card: null },
       { type: "MONSTER", card: null },
       { type: "MONSTER", card: null },
+      { type: "GRAVEYARD", card: null },
       { type: "ESPECIAL", card: null },
-      { type: "ESPECIAL", card: null },
       { type: "TRAP/ESPELL", card: null },
       { type: "TRAP/ESPELL", card: null },
       { type: "TRAP/ESPELL", card: null },
       { type: "TRAP/ESPELL", card: null },
       { type: "TRAP/ESPELL", card: null },
-      { type: "ESPECIAL", card: null },
+      { type: "DECK", card: null },
     ];
 
-    cards?.map((card) => {
+    fieldCards?.map((card) => {
       const index = cardsBox.findIndex(
         (box) => box.type === "MONSTER" && box.card === null
       );
       cardsBox[index].card = card;
     });
 
+    const deckBoxIndex = cardsBox.findIndex((box) => box.type === "DECK");
+
+    cardsBox[deckBoxIndex].card = {
+      image: "images/cards/card_face_down.jpeg",
+    } as any;
+
+    const graveyardBoxIndex = cardsBox.findIndex(
+      (box) => box.type === "GRAVEYARD"
+    );
+
+    cardsBox[graveyardBoxIndex].card =
+      graveyardCards[graveyardCards.length - 1];
+
     return cardsBox;
   }
 
-  function test() {
-    alert(att);
+  function specialBox(box: any) {
+    return box.type !== "TRAP/ESPELL" && box.type !== "MONSTER";
   }
 
-  function handleClick(card, side) {
-    if (side === "MINE") {
-      const accepted = confirm("Deseja realizar um ataque?");
-      if (accepted) {
-        setAtt(card);
-        alert(card.name);
-      }
-      return;
+  function handleClick(box, side) {
+    if (side === "MINE" && !specialBox(box) && isMyTurn && !firstTurn) {
+      setIsMonsterActionsModalOpen(true);
+      setSelectedCard(box.card);
     }
+  }
 
-    const accepted = confirm(`Deseja atacar ${card.name}?`);
-    if (accepted) {
-      setTarget(card);
+  function handleMouseEnter(box, side) {
+    if (box.card) {
+      if (side === SIDE.OPPONENT && box.card.pos === CARD_POS.SET) return;
 
-      test();
+      setSelectedCard(box.card);
     }
+  }
+
+  function handleMouseLeave(box, side) {
+    setSelectedCard(null);
   }
 
   return (
     <div
       className={`${styles.playMat} ${side === "OPPONENT" && styles.opponent}`}
     >
-      {buildCardsBoxFrom(cards).map((box, index) => (
-        <div
-          key={index}
-          className={`${styles.cardsBox} ${
-            box.type === "ESPECIAL" && styles.especialBox
-          }`}
-          onClick={() => confirmSummon(index)}
-        >
-          {box.card && (
-            <div
-              className={styles.card}
-              onClick={() => handleClick(box.card, side)}
-              style={{
-                background: `center / cover url(${
-                  box.card.pos === "SET"
-                    ? "images/cards/card_face_down.jpeg"
-                    : box.card.image
-                })`,
-                transform: `${
-                  box.card.pos === "DEFENSE" || box.card.pos === "SET"
-                    ? "rotate(-90deg)"
-                    : "rotate(0)"
-                }`,
-              }}
-            />
-          )}
-        </div>
-      ))}
+      {buildCardsBoxFrom(fieldCards, deckCards, graveyardCards).map(
+        (box, index) => (
+          <div
+            key={index}
+            className={classNames(styles.cardsBox, {
+              [styles.especialBox]: specialBox(box),
+            })}
+          >
+            {box.card && (
+              <div
+                className={styles.card}
+                onClick={() => handleClick(box, side)}
+                onMouseEnter={() => handleMouseEnter(box, side)}
+                // onMouseLeave={() => handleMouseLeave(box, side)}
+                style={{
+                  background: `center / cover url(${
+                    box.card.pos === "SET"
+                      ? "images/cards/card_face_down.jpeg"
+                      : box.card.image
+                  })`,
+                  transform: `${
+                    box.card.pos === "DEFENSE" || box.card.pos === "SET"
+                      ? "rotate(-90deg)"
+                      : "rotate(0)"
+                  }`,
+                }}
+              >
+                {specialBox(box) && (
+                  <span
+                    style={{
+                      transform: `${
+                        side === "OPPONENT" ? "rotate(-180deg)" : "rotate(0)"
+                      }`,
+                    }}
+                  >
+                    {box.type === "DECK"
+                      ? deckCards.length
+                      : graveyardCards.length}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      )}
     </div>
   );
 };

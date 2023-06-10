@@ -12,8 +12,8 @@
   .cardsBox {
     width: 100px;
     height: 140px;
-    border: 1px solid rgba(255, 0, 0, 0);
-    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    background: var(--colors-shape-secondary);
     border-radius: 4px;
     cursor: pointer;
     display: flex;
@@ -21,14 +21,27 @@
     justify-content: center;
 
     .card {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 80px;
       height: 120px;
       cursor: pointer;
+      border: 1px solid var(--colors-grey-100);
+
+      > span {
+        color: #fff;
+        font-size: 40px;
+      }
     }
 
     &.especialBox {
       width: 90px;
       height: 130px;
+    }
+
+    &:hover {
+      background: var(--colors-grey-500);
     }
   }
 }

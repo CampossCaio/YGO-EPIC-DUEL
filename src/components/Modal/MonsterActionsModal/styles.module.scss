@@ -1,0 +1,26 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 250px;
+  background: var(--colors-shape-secondary);
+  border: 1px solid var(--colors-grey-500);
+  border-radius: 10px;
+  padding: 16px;
+
+  gap: 16px;
+
+  > button {
+    background: var(--colors-shape-tertiary);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--colors-grey-100);
+
+    &:hover {
+      background: var(--colors-grey-500);
+    }
+  }
+}

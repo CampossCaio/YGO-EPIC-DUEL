@@ -1,14 +1,19 @@
+import useGame from "../../hooks/useGame";
+
 export type HealthBarProps = {
-  lifePoints: number;
+  side: "LEFT" | "RIGH";
 };
 
-export const HealthBar = ({ lifePoints }: HealthBarProps) => {
+export const HealthBar = ({ side }: HealthBarProps) => {
+  const { playerLifePoints, opponenLifePoints } = useGame();
+
   return (
     <div
       className="healthBar"
       style={{
         display: "flex",
         gap: 5,
+        color: "var(--colors-grey-100)",
       }}
     >
       <div
@@ -16,7 +21,7 @@ export const HealthBar = ({ lifePoints }: HealthBarProps) => {
           height: 100,
           width: 100,
           borderRadius: 6,
-          background: "#fff",
+          background: "var(--colors-shape-tertiary)",
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -44,7 +49,7 @@ export const HealthBar = ({ lifePoints }: HealthBarProps) => {
           style={{
             display: "flex",
             height: "50%",
-            background: "#fff",
+            background: "var(--colors-shape-tertiary)",
             alignItems: "center",
             justifyContent: "space-between",
             borderRadius: 6,
@@ -52,14 +57,14 @@ export const HealthBar = ({ lifePoints }: HealthBarProps) => {
           }}
         >
           <span>LP</span>
-          <span>{lifePoints}</span>
+          <span>{side === "LEFT" ? playerLifePoints : opponenLifePoints}</span>
         </div>
 
         <div
           style={{
             display: "flex",
             height: "50%",
-            background: "#fff",
+            background: "var(--colors-shape-tertiary)",
             alignItems: "center",
             justifyContent: "space-between",
             borderRadius: 6,

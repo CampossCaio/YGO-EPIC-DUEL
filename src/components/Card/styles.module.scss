@@ -3,8 +3,5 @@
   height: 160px;
   cursor: pointer;
   transition: all ease-in 0.2s;
-
-  &:hover {
-    transform: translateY(-30px);
-  }
+  border: 1px solid var(--colors-grey-100);
 }

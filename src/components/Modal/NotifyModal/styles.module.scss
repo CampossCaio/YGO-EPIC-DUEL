@@ -1,0 +1,64 @@
+/* The animation code */
+@keyframes show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale {
+  from {
+    scale: 0.2;
+  }
+  to {
+    scale: 2;
+  }
+}
+
+@keyframes slide {
+  0% {
+    left: -10%;
+  }
+
+  100% {
+    left: 36%;
+  }
+}
+
+.container {
+  position: relative;
+  display: flex;
+  height: 200px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  animation: show;
+  animation-duration: 1s;
+  transition: animation ease-in-out;
+
+  span {
+    font-size: 80px;
+    font-weight: bold;
+    position: relative;
+    transition: animation ease-in-out;
+  }
+
+  &.slide {
+    justify-content: start;
+    span {
+      animation: slide;
+      animation-duration: 1s;
+    }
+  }
+
+  &.scale {
+    span {
+      animation: scale;
+      animation-duration: 1s;
+    }
+  }
+}

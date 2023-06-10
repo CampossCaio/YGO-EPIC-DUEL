@@ -10,9 +10,10 @@ export const SelectedCardInfo = ({ selectedCard }: SelectedCardInfoProps) => {
       <div
         style={{
           padding: 8,
-          background: "#fff",
+          background: "var(--colors-shape-tertiary)",
           borderRadius: 4,
           display: "flex",
+
           //padding: 10,
         }}
       >
@@ -24,7 +25,7 @@ export const SelectedCardInfo = ({ selectedCard }: SelectedCardInfoProps) => {
               : "images/cards/card_face_down.jpeg"
           }`}
           alt="ded"
-          style={{ width: 250 }}
+          style={{ width: 250, border: "1px solid var(--colors-grey-100)" }}
         />
       </div>
       <div
@@ -32,9 +33,10 @@ export const SelectedCardInfo = ({ selectedCard }: SelectedCardInfoProps) => {
           width: "100%",
           height: 100,
           marginTop: 20,
-          background: "#fff",
+          background: "var(--colors-shape-tertiary)",
           maxWidth: 290,
           borderRadius: 4,
+          color: "var(--colors-grey-100)",
           //padding: 10,
         }}
       >

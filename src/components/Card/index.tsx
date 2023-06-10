@@ -1,5 +1,7 @@
 import Image from "next/image";
 import styles from "./styles.module.scss";
+import classNames from "classnames";
+import { CARD_POS } from "../../interfaces/enum";
 
 // const cardImageLoader = (src: string) => {
 //   return `images/cards/${src}`;
@@ -34,17 +36,30 @@ export type CardProps = {
   card: any;
   onClick: (card: any) => void;
   side: string;
+  className?: string;
 };
 
-export const Card = ({ card, handleSelectCard, onClick, side }: CardProps) => {
+export const Card = ({
+  card,
+  handleSelectCard,
+  onClick,
+  side,
+  className,
+}: CardProps) => {
   return (
     <div
       onMouseEnter={() => handleSelectCard(card)}
       onMouseLeave={() => handleSelectCard(null)}
-      className={`${styles.card}  ${side === "OPPONENT" && styles.opponent}`}
+      className={classNames(styles.card, className, {
+        [styles.opponent]: side === "OPPONENT",
+      })}
       key={card.id}
       style={{
-        background: `center / cover url(${card.image})`,
+        background: `center / cover url(${
+          card.pos === CARD_POS.SET
+            ? "images/cards/card_face_down.jpeg"
+            : card.image
+        })`,
       }}
       onClick={() => onClick(card)}
     >

@@ -1,15 +1,19 @@
+import useGame from "../../hooks/useGame";
 import { PlayMat } from "../PlayMat";
 
 export type FieldProps = {
-  cards: Array<any>;
-  confirmSummon: (index: number) => void;
-  ocards: Array<any>;
+  battle: (args: any) => void;
 };
 
-const opponentCardBox = new Array(14).fill(null);
-
-export const Field = ({ cards, ocards, confirmSummon }: FieldProps) => {
-  console.log("openent on field", ocards);
+export const Field = ({ battle }: FieldProps) => {
+  const {
+    playerField,
+    opponentField,
+    playerGraveyard,
+    playerDeck,
+    opponentDeck,
+    opponentGraveyard,
+  } = useGame();
   return (
     <div
       className="playMatContainer"
@@ -22,9 +26,19 @@ export const Field = ({ cards, ocards, confirmSummon }: FieldProps) => {
         marginBottom: 150,
       }}
     >
-      <PlayMat cards={ocards} side="OPPONENT" confirmSummon={() => {}} />
+      <PlayMat
+        graveyardCards={opponentGraveyard}
+        deckCards={opponentDeck}
+        fieldCards={opponentField}
+        side="OPPONENT"
+      />
       <div style={{ height: 40 }}></div>
-      <PlayMat cards={cards} confirmSummon={confirmSummon} />
+      <PlayMat
+        graveyardCards={playerGraveyard}
+        deckCards={playerDeck}
+        fieldCards={playerField}
+        battle={battle}
+      />
     </div>
   );
 };
