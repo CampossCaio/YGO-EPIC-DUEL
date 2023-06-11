@@ -1,4 +1,4 @@
-import { Server } from "Socket.IO";
+import { Server } from "socket.io";
 
 function setTurnRandomly(players: any[]) {
   const playerIndex = Math.floor(Math.random() * players.length);
